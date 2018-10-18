@@ -37,107 +37,103 @@ Compiling a new OpenWRT image is not necessary if the router already has OpenWRT
 firmware on it. Nevertheless, this guide will show you how to set up most of
 what NetGrok needs before it can install and run on a router.
 
-  1. For reference, see [beginners build guide] and [how to include custom
-  files].
+1. For reference, see [beginners build guide] and [how to include custom files].
+
+2. Clone the [OpenWRT repository]:
+```
+git clone https://git.openwrt.org/openwrt/openwrt.git openwrt
+```
+
+3. Go into the OpenWRT source directory and remove any build artifacts:
+```
+cd openwrt
+make distclean
+```
+
+4. (Optional) Check out the latest stable release of OpenWRT. This example uses
+OpenWRT v18.06.1:
+```
+git tag
+git checkout v18.06.1
+```
+
+5. Copy all files from the `netgrok/openwrt/` directory into the OpenWRT source
+directory. The `netgrok/openwrt/` directory contains the following:
+  - `feeds.conf`, a custom feed configuration file for OpenWRT packages;
+  - `files/etc/firewall.user`, custom NAT rules for SSLsplit-NetGrok to work;
+  - `files/etc/rc.local`, a custom startup script that automatically generates a
+    NetGrok CA key and certificate pair if one does not already exist, and then
+    runs SSLsplit-NetGrok.
+
+  ```
+  cd ..
+  cp -r netgrok/openwrt/* openwrt
+  ```
+
+6. Update the package feeds and install the packages that NetGrok needs:
+  - LuCI
+  - musl-fts
+  - ZeroMQ
+  - NetGrok
+
+  ```
+  cd openwrt
+
+  ./scripts/feeds update luci
+  ./scripts/feeds update musl-fts
+  ./scripts/feeds update zmq
+  ./scripts/feeds update netgrok
+
+  ./scripts/feeds install luci
+  ./scripts/feeds install musl-fts
+  ./scripts/feeds install zmq
+  ./scripts/feeds install -a -p netgrok
+  ```
+
+7. Use the build system configuration interface to set build settings:
+```
+make menuconfig
+```
+
+Use the arrow keys to navigate the menu. If not already selected, select the
+following packages:
+- Libraries
+  - musl-fts
+  - libzmq-nc
+- LuCI
+  - Collections
+    - luci
+  - Applications
+    - luci-app-netgrok
+- Network
+  - netgrok-sub
+  - sslsplit-netgrok
+- Utilities
+  - openssl-util
+
+Select 'Save' and then 'Ok'
+
+8. Find your OpenWRT-compatible router in the [table of hardware]:
+  - Under the 'Device Techdata' column, click 'View/Edit data'
+  - Have this open for reference for the next step
 
 
-  2. Clone the [OpenWRT repository]:
-    ```
-    git clone https://git.openwrt.org/openwrt/openwrt.git openwrt
-    ```
+9. Use `make menuconfig` to set the build settings for the target architecture
+based on information from the previous step:
+  - Target System
+  - Subtarget
+  - Target Profile (device model)
 
-  3. Go into the OpenWRT source directory and remove any build artifacts:
-    ```
-    cd openwrt
-    make distclean
-    ```
+10. Build the cross-compilation toolchain. This might take almost an hour:
+```
+make toolchain/install
+```
 
-  4. (Optional) Check out the latest stable release of OpenWRT. This example
-  uses OpenWRT v18.06.1:
-    ```
-    git tag
-    git checkout v18.06.1
-    ```
-
-  5. Copy all files from the `netgrok/openwrt/` directory into the OpenWRT source
-  directory. The `netgrok/openwrt/` directory contains the following:
-    - `feeds.conf`, a custom feed configuration file for OpenWRT packages;
-    - `files/etc/firewall.user`, custom NAT rules for SSLsplit-NetGrok to work;
-    - `files/etc/rc.local`, a custom startup script that automatically generates
-      a NetGrok CA key and certificate pair if one does not already exist, and
-      then runs SSLsplit-NetGrok.
-
-    ```
-    cd ..
-    cp -r netgrok/openwrt/* openwrt
-    ```
-
-  6. Update the package feeds and install the packages that NetGrok needs:
-    - LuCI
-    - musl-fts
-    - ZeroMQ
-    - NetGrok
-
-    ```
-    cd openwrt
-
-    ./scripts/feeds update luci
-    ./scripts/feeds update musl-fts
-    ./scripts/feeds update zmq
-    ./scripts/feeds update netgrok
-
-    ./scripts/feeds install luci
-    ./scripts/feeds install musl-fts
-    ./scripts/feeds install zmq
-    ./scripts/feeds install -a -p netgrok
-    ```
-
-  7. Use the build system configuration interface to set build settings:
-    ```
-    make menuconfig
-    ```
-
-    Use the arrow keys to navigate the menu. If not already selected, select the
-    following packages:
-    - Libraries
-      - musl-fts
-      - libzmq-nc
-    - LuCI
-      - Collections
-        - luci
-      - Applications
-        - luci-app-netgrok
-    - Network
-      - netgrok-sub
-      - sslsplit-netgrok
-    - Utilities
-      - openssl-util
-
-    Select 'Save' and then 'Ok'
-
-
-  8. Find your OpenWRT-compatible router in the [table of hardware]:
-    - Under the 'Device Techdata' column, click 'View/Edit data'
-    - Have this open for reference for the next step
-
-
-  9. Use `make menuconfig` to set the build settings for the target architecture
-    based on information from the previous step:
-    1. Target System
-    2. Subtarget
-    3. Target Profile (device model)
-
-
-  10. Build the cross-compilation toolchain. This might take almost an hour:
-    ```
-    make toolchain/install
-    ```
-
-  11. Build the OpenWRT image:
-    ```
-    make download
-    make -j 5
-    ```
+11. Build the OpenWRT image:
+```
+make download
+make -j 5
+```
 
 [beginners build guide]: https://openwrt.org/docs/guide-user/additional-software/beginners-build-guide
 [how to include custom files]: https://openwrt.org/docs/guide-developer/build-system/use-buildsystem#custom_files
@@ -147,8 +143,8 @@ what NetGrok needs before it can install and run on a router.
 
 #### How to cross-compile SSLsplit-NetGrok for an OpenWRT router
 There are two main ways to cross-compile packages for OpenWRT:
-  1. [OpenWRT SDK]
-  2. [OpenWRT build system]
+1. [OpenWRT SDK]
+2. [OpenWRT build system]
 
 [OpenWRT SDK]: https://openwrt.org/docs/guide-developer/using_the_sdk
 [OpenWRT build system]: https://openwrt.org/docs/guide-developer/build-system/start
@@ -165,43 +161,49 @@ The package should be located in `bin/packages/<architecture>/netgrok/`.
 
 
 #### Installing SSLsplit-NetGrok on an OpenWRT router
-  1. After cross-compiling the SSLsplit-NetGrok package for the router, copy the
-  `.ipk` file onto the router.
-  2. Additionally, copy the files listed in [step 5] of the guide on building an
-  OpenWRT firmware image to run SSLsplit-NetGrok automatically on boot.
-  3. SSH into the router.
-  4. Go to the directory of the `.ipk` file and enter `opkg install <package_filename.ipk>`.
+1. After cross-compiling the SSLsplit-NetGrok package for the router, copy the
+`.ipk` file onto the router.
+
+2. Additionally, copy the files listed in [step 5] of the guide on building an
+OpenWRT firmware image to run SSLsplit-NetGrok automatically on boot.
+
+3. SSH into the router.
+
+4. Go to the directory of the `.ipk` file and enter `opkg install <package_filename.ipk>`.
 
 [step 5]: ./README.md#L62
 
 ### Run SSLsplit-NetGrok manually
-  1. If a certificate authority key and certificate pair does not already exist,
-  generate one:
-    ```
-    openssl genrsa -out /netgrok/netgrok.key 4096
-    printf "US\nNew York\nWest Point\nNetGrok CA\nNetGrok II\nNetGrok\n\n" | openssl req -new -x509 -days 1826 -key /netgrok/netgrok.key -out /netgrok/netgrok.crt
-    ```
-  2. Make the certificate available to outside hosts by creating/updating the
-  symbolic link for the .crt at http://192.168.1.1/netgrok.crt:
-    ```
-    ln -sf /netgrok/netgrok.crt /www/netgrok.crt
-    ```
-  3. Modify the NAT. SSLsplit-NetGrok focuses on HTTP and HTTPS:
-    ```
-    iptables -t nat -A PREROUTING -p tcp --dport   80 -j REDIRECT --to-ports 8080
-    iptables -t nat -A PREROUTING -p tcp --dport  443 -j REDIRECT --to-ports 8443
-    ```
-    However, SSLsplit also works with the following rules:
-    ```
-    iptables -t nat -A PREROUTING -p tcp --dport  465 -j REDIRECT --to-ports 8443
-    iptables -t nat -A PREROUTING -p tcp --dport  587 -j REDIRECT --to-ports 8443
-    iptables -t nat -A PREROUTING -p tcp --dport  993 -j REDIRECT --to-ports 8443
-    iptables -t nat -A PREROUTING -p tcp --dport 5222 -j REDIRECT --to-ports 8080
-    ```
-  4. Run SSLsplit-NetGrok:
-    ```
-    sslsplit -k /netgrok/netgrok.key -c /netgrok/netgrok.crt tcp 0.0.0.0 8080 ssl 0.0.0.0 8443
-    ```
+1. If a certificate authority key and certificate pair does not already exist,
+generate one:
+```
+openssl genrsa -out /netgrok/netgrok.key 4096
+printf "US\nNew York\nWest Point\nNetGrok CA\nNetGrok II\nNetGrok\n\n" | openssl req -new -x509 -days 1826 -key /netgrok/netgrok.key -out /netgrok/netgrok.crt
+```
+
+2. Make the certificate available to outside hosts by creating/updating the
+symbolic link for the .crt at http://192.168.1.1/netgrok.crt:
+```
+ln -sf /netgrok/netgrok.crt /www/netgrok.crt
+```
+
+3. Modify the NAT. SSLsplit-NetGrok focuses on HTTP and HTTPS:
+```
+iptables -t nat -A PREROUTING -p tcp --dport   80 -j REDIRECT --to-ports 8080
+iptables -t nat -A PREROUTING -p tcp --dport  443 -j REDIRECT --to-ports 8443
+```
+However, SSLsplit also works with the following rules:
+```
+iptables -t nat -A PREROUTING -p tcp --dport  465 -j REDIRECT --to-ports 8443
+iptables -t nat -A PREROUTING -p tcp --dport  587 -j REDIRECT --to-ports 8443
+iptables -t nat -A PREROUTING -p tcp --dport  993 -j REDIRECT --to-ports 8443
+iptables -t nat -A PREROUTING -p tcp --dport 5222 -j REDIRECT --to-ports 8080
+```
+
+4. Run SSLsplit-NetGrok:
+```
+sslsplit -k /netgrok/netgrok.key -c /netgrok/netgrok.crt tcp 0.0.0.0 8080 ssl 0.0.0.0 8443
+```
 
 Submodules
 --------------------------------------------------------------------------------
