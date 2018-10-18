@@ -6,9 +6,12 @@
 # put custom rules into the root chains e.g. INPUT or FORWARD or into the
 # special user chains, e.g. input_wan_rule or postrouting_lan_rule.
 
-iptables -t nat -A PREROUTING -p tcp --dport   80 -j REDIRECT --to-ports 8080
-iptables -t nat -A PREROUTING -p tcp --dport  443 -j REDIRECT --to-ports 8443
-iptables -t nat -A PREROUTING -p tcp --dport  465 -j REDIRECT --to-ports 8443
-iptables -t nat -A PREROUTING -p tcp --dport  587 -j REDIRECT --to-ports 8443
-iptables -t nat -A PREROUTING -p tcp --dport  993 -j REDIRECT --to-ports 8443
-iptables -t nat -A PREROUTING -p tcp --dport 5222 -j REDIRECT --to-ports 8080
+# uncomment only AFTER running SSLsplit:
+# ------------------------------------------------------------------------------
+# iptables -t nat -A PREROUTING -p tcp --dport   80 -j REDIRECT --to-ports 8080
+# iptables -t nat -A PREROUTING -p tcp --dport  443 -j REDIRECT --to-ports 8443
+# iptables -t nat -A PREROUTING -p tcp --dport  465 -j REDIRECT --to-ports 8443
+# iptables -t nat -A PREROUTING -p tcp --dport  587 -j REDIRECT --to-ports 8443
+# iptables -t nat -A PREROUTING -p tcp --dport  993 -j REDIRECT --to-ports 8443
+# iptables -t nat -A PREROUTING -p tcp --dport 5222 -j REDIRECT --to-ports 8080
+# ------------------------------------------------------------------------------
