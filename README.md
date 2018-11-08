@@ -14,9 +14,9 @@ University of Maryland.
 Getting Started
 --------------------------------------------------------------------------------
 The examples below show how to get NetGrok running on a brand new router. First,
-clone the repostiroy,
+clone the repository,
 ```
-git clone https://ghost-in-the-bash/netgrok.git netgrok
+git clone https://github.com/ghost-in-the-bash/netgrok.git netgrok
 ```
 and then follow one of the OpenWRT examples for installing NetGrok.
 
@@ -79,6 +79,7 @@ directory. The `netgrok/openwrt/` directory contains the following:
   ```
   cd openwrt
 
+  ./scripts/feeds update -a
   ./scripts/feeds update luci
   ./scripts/feeds update musl-fts
   ./scripts/feeds update zmq
@@ -98,8 +99,8 @@ make menuconfig
 Use the arrow keys to navigate the menu. If not already selected, select the
 following packages:
 - Libraries
-  - musl-fts
   - libzmq-nc
+  - musl-fts
 - LuCI
   - Collections
     - luci
@@ -111,7 +112,6 @@ following packages:
 - Utilities
   - openssl-util
 
-Select 'Save' and then 'Ok'
 
 8. Find your OpenWRT-compatible router in the [table of hardware]:
   - Under the 'Device Techdata' column, click 'View/Edit data'
